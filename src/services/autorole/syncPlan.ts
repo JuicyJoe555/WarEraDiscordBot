@@ -66,9 +66,9 @@ export function computeMemberSyncPlan(
   }
   targets.push(getBestRoleForLevel(cfg.levelRoles, user.level));
 
-  if (cfg.prestigeRoleId && user.prestigeLevel !== undefined) {
-    managed.add(cfg.prestigeRoleId);
-    if (user.prestigeLevel > 0) targets.push(cfg.prestigeRoleId);
+  if (user.prestigeLevel !== undefined) {
+    for (const entry of cfg.prestigeRoles) managed.add(entry.roleId);
+    targets.push(getBestRoleForLevel(cfg.prestigeRoles, user.prestigeLevel));
   }
 
   for (const roleId of [cfg.ecoRoleId, cfg.warRoleId, cfg.hybridRoleId]) {

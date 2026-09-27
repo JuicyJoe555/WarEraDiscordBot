@@ -148,7 +148,7 @@ export class AutoroleService implements ScheduledTask {
    */
   async onUnlinked(serverId: string, discordUserId: string): Promise<void> {
     const cfg = ServerConfigManager.getAutoroleConfig(serverId);
-    if (!cfg || (!cfg.unlinkedRoleId && !cfg.linkedRoleId && !cfg.opsecRoleId && !cfg.prestigeRoleId)) {
+    if (!cfg || (!cfg.unlinkedRoleId && !cfg.linkedRoleId && !cfg.opsecRoleId && !cfg.prestigeRoles.length)) {
       return;
     }
     const guild = await this.fetchGuild(serverId);
@@ -166,8 +166,8 @@ export class AutoroleService implements ScheduledTask {
     if (cfg.opsecRoleId) {
       await this.removeRole(member, cfg.opsecRoleId, 'opsec (unlink)');
     }
-    if (cfg.prestigeRoleId) {
-      await this.removeRole(member, cfg.prestigeRoleId, 'prestige (unlink)');
+    for (const entry of cfg.prestigeRoles) {
+      await this.removeRole(member, entry.roleId, 'prestige (unlink)');
     }
   }
 

@@ -127,6 +127,10 @@ export class ServerConfigManager {
     validateSpectreMonitors(serverConfig.spectre?.buildingMonitors, 'buildingMonitors');
     validateSpectreMonitors(serverConfig.spectre?.resistanceMonitors, 'resistanceMonitors');
 
+    const autorole = serverConfig.autorole as (AutoroleConfig & { prestigeRoleId?: string }) | undefined;
+    const prestigeRoles = autorole?.prestigeRoles ??
+      (autorole?.prestigeRoleId ? [{ roleId: autorole.prestigeRoleId, minLevel: 1 }] : []);
+
     return {
       bountyBattles: serverConfig.bountyBattles ? {
         channelId: serverConfig.bountyBattles.channelId,
@@ -196,7 +200,7 @@ export class ServerConfigManager {
         checkIntervalSeconds: Math.max(60, serverConfig.autorole.checkIntervalSeconds ?? 3600),
         lastSyncAt: serverConfig.autorole.lastSyncAt,
         levelRoles: (serverConfig.autorole.levelRoles || []).filter(e => e.roleId && e.roleId.trim().length > 0),
-        prestigeRoleId: serverConfig.autorole.prestigeRoleId,
+        prestigeRoles: prestigeRoles.filter(e => e.roleId && e.roleId.trim().length > 0),
         timedRoles: (serverConfig.autorole.timedRoles || []).filter(e => e.roleId && e.roleId.trim().length > 0),
         ecoRoleId: serverConfig.autorole.ecoRoleId,
         warRoleId: serverConfig.autorole.warRoleId,
@@ -468,6 +472,7 @@ export class ServerConfigManager {
       autorole: config.autorole ? {
         ...config.autorole,
         levelRoles: config.autorole.levelRoles.map(e => ({ ...e })),
+        prestigeRoles: config.autorole.prestigeRoles.map(e => ({ ...e })),
         timedRoles: config.autorole.timedRoles.map(e => ({ ...e })),
         manageRoleIds: [...config.autorole.manageRoleIds],
         manageUserIds: [...config.autorole.manageUserIds],
@@ -1371,6 +1376,7 @@ export class ServerConfigManager {
       enabled: true,
       checkIntervalSeconds: 3600,
       levelRoles: [],
+      prestigeRoles: [],
       timedRoles: [],
       ecoThreshold: 60,
       warThreshold: 60,
@@ -1402,7 +1408,7 @@ export class ServerConfigManager {
         checkIntervalSeconds: Math.max(60, config.checkIntervalSeconds !== undefined ? config.checkIntervalSeconds : existing.checkIntervalSeconds),
         lastSyncAt: config.lastSyncAt !== undefined ? config.lastSyncAt : existing.lastSyncAt,
         levelRoles: config.levelRoles !== undefined ? config.levelRoles : existing.levelRoles,
-        prestigeRoleId: config.prestigeRoleId !== undefined ? config.prestigeRoleId : existing.prestigeRoleId,
+        prestigeRoles: config.prestigeRoles !== undefined ? config.prestigeRoles : existing.prestigeRoles,
         timedRoles: config.timedRoles !== undefined ? config.timedRoles : existing.timedRoles,
         ecoRoleId: config.ecoRoleId !== undefined ? config.ecoRoleId : existing.ecoRoleId,
         warRoleId: config.warRoleId !== undefined ? config.warRoleId : existing.warRoleId,

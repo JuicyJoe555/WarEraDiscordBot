@@ -268,7 +268,7 @@ export interface AutoroleConfig {
   checkIntervalSeconds: number; // per-server sync cadence (default 3600, floor 60)
   lastSyncAt?: string; // ISO timestamp of the last completed sync
   levelRoles: LevelRoleEntry[];
-  prestigeRoleId?: string; // additional role for linked players with prestige level 1+
+  prestigeRoles: LevelRoleEntry[]; // separate ladder keyed by prestige level
   timedRoles: TimedRoleEntry[];
   ecoRoleId?: string;
   warRoleId?: string;
