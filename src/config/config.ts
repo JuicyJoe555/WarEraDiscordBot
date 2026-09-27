@@ -175,6 +175,7 @@ export interface LeaderboardRankEntry {
   value: number;
   countryCode?: string;
   level?: number;
+  prestigeLevel?: number;
 }
 
 /**
