@@ -74,6 +74,58 @@ describe('ServerConfigManager autorole config', () => {
     expect(ServerConfigManager.getAutoroleConfig(SERVER)?.checkIntervalSeconds).toBe(60);
   });
 
+  it('can clear the Prestige role without changing level roles', () => {
+    ServerConfigManager.updateAutoroleConfig(SERVER, {
+      levelRoles: [{ roleId: 'level', minLevel: 10 }],
+      prestigeRoleId: 'prestige',
+    });
+    ServerConfigManager.updateAutoroleConfig(SERVER, { prestigeRoleId: '' });
+    expect(ServerConfigManager.getAutoroleConfig(SERVER)).toMatchObject({
+      levelRoles: [{ roleId: 'level', minLevel: 10 }],
+      prestigeRoleId: '',
+    });
+  });
+
+  it('normalizes the stored 40-45/45+ overlap on load and write', async () => {
+    const legacy = [
+      { minLevel: 40, maxLevel: 45, label: '40-45' },
+      { minLevel: 45, label: '45+' },
+    ];
+    await prisma.server.update({
+      where: { id: SERVER },
+      data: { leaderboard: JSON.stringify({
+        channelId: 'leaderboard-channel', countryIds: [], countryNames: [], topCount: 10,
+        levelBrackets: legacy,
+      }) },
+    });
+    ServerConfigManager.clearCache();
+    await ServerConfigManager.loadConfigs();
+    expect(ServerConfigManager.getServerConfig(SERVER)?.leaderboard?.levelBrackets).toEqual([
+      { minLevel: 40, maxLevel: 44, label: '40-44' },
+      { minLevel: 45, label: '45+' },
+    ]);
+    ServerConfigManager.updateLeaderboardConfig(SERVER, { topCount: 9 });
+    await ServerConfigManager.flush();
+    const stored = await prisma.server.findUniqueOrThrow({ where: { id: SERVER } });
+    expect(JSON.parse(stored.leaderboard!).levelBrackets[0]).toEqual({
+      minLevel: 40, maxLevel: 44, label: '40-44',
+    });
+  });
+
+  it('upgrades the old three-bracket default to all five level bands', async () => {
+    ServerConfigManager.updateLeaderboardConfig(SERVER, {
+      channelId: 'leaderboard-channel',
+      levelBrackets: [
+        { minLevel: 20, maxLevel: 29, label: '20-29' },
+        { minLevel: 30, maxLevel: 39, label: '30-39' },
+        { minLevel: 40, label: '40+' },
+      ],
+    });
+    expect(ServerConfigManager.getServerConfig(SERVER)?.leaderboard?.levelBrackets.map(b => b.label)).toEqual([
+      '0-19', '20-29', '30-39', '40-44', '45+',
+    ]);
+  });
+
   it('filters blank ids on normalization when reloaded from the database', async () => {
     ServerConfigManager.updateAutoroleConfig(SERVER, {
       levelRoles: [
@@ -105,6 +157,7 @@ describe('ServerConfigManager autorole config', () => {
       checkIntervalSeconds: 7200,
       lastSyncAt: '2026-07-11T12:00:00.000Z',
       levelRoles: [{ roleId: 'r1', minLevel: 10 }],
+      prestigeRoleId: 'prestige',
       timedRoles: [{ roleId: 'r2', timeoutDays: 7.5 }],
       ecoRoleId: 'eco',
       warRoleId: 'war',
@@ -135,6 +188,7 @@ describe('ServerConfigManager autorole config', () => {
       checkIntervalSeconds: 7200,
       lastSyncAt: '2026-07-11T12:00:00.000Z',
       levelRoles: [{ roleId: 'r1', minLevel: 10 }],
+      prestigeRoleId: 'prestige',
       timedRoles: [{ roleId: 'r2', timeoutDays: 7.5 }],
       ecoRoleId: 'eco',
       warRoleId: 'war',

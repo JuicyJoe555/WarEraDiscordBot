@@ -215,7 +215,7 @@ export function parseLevelBrackets(input: string): LevelBracket[] {
   for (const part of parts) {
     if (part.endsWith('+')) {
       const minLevel = parseInt(part.slice(0, -1), 10);
-      if (isNaN(minLevel)) {
+      if (!/^\d+\+$/.test(part) || isNaN(minLevel)) {
         throw new Error(`Invalid bracket: ${part}`);
       }
       brackets.push({ minLevel, label: part });
@@ -234,6 +234,16 @@ export function parseLevelBrackets(input: string): LevelBracket[] {
     }
 
     brackets.push({ minLevel, maxLevel, label: part.replace(/\s/g, '') });
+  }
+
+  for (let i = 0; i < brackets.length; i++) {
+    for (let j = i + 1; j < brackets.length; j++) {
+      const a = brackets[i];
+      const b = brackets[j];
+      if (a.minLevel <= (b.maxLevel ?? Infinity) && b.minLevel <= (a.maxLevel ?? Infinity)) {
+        throw new Error(`Level brackets overlap: ${a.label} and ${b.label}.`);
+      }
+    }
   }
 
   return brackets;

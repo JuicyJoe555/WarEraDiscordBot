@@ -26,7 +26,7 @@ describe('LeaderboardService offline refresh', () => {
         { minLevel: 0, maxLevel: 19, label: '0-19' },
         { minLevel: 20, maxLevel: 29, label: '20-29' },
         { minLevel: 30, maxLevel: 39, label: '30-39' },
-        { minLevel: 40, maxLevel: 45, label: '40-45' },
+        { minLevel: 40, maxLevel: 44, label: '40-44' },
         { minLevel: 45, label: '45+' },
       ],
     };
@@ -36,6 +36,7 @@ describe('LeaderboardService offline refresh', () => {
       { id: 'prestige-two', name: 'Prestige Two', level: 35, prestigeLevel: 2, weekly: 200, total: 2000 },
       { id: 'prestige-one', name: 'Prestige One', level: 41, prestigeLevel: 1, weekly: 150, total: 1500 },
       { id: 'legacy', name: 'Legacy', level: 42, weekly: 80, total: 800 },
+      { id: 'boundary', name: 'Boundary', level: 45, prestigeLevel: 0, weekly: 75, total: 750 },
       { id: 'veteran', name: 'Veteran', level: 46, prestigeLevel: 0, weekly: 70, total: 700 },
     ];
     const userData = new Map(players.map(player => [player.id, {
@@ -83,8 +84,10 @@ describe('LeaderboardService offline refresh', () => {
     expect(rendered[2].description).toContain('Regular');
     expect(rendered[2].description).not.toContain('Prestige Two');
     expect(rendered[3].description).toContain('Legacy');
+    expect(rendered[3].description).not.toContain('Boundary');
     expect(rendered[3].description).not.toContain('Prestige One');
     expect(rendered[4].description).toContain('Veteran');
+    expect(rendered[4].description).toContain('Boundary');
     expect(rendered[5].title).toContain('Prestige');
     expect(rendered[5].description).toContain('P2 · Lv 35 ·');
     expect(rendered[5].description).toContain('P1 · Lv 41 ·');
@@ -97,18 +100,18 @@ describe('LeaderboardService offline refresh', () => {
     const snapshot = saved.lastSnapshot as LeaderboardSnapshot;
     expect(snapshot.playerWeeklyByBracket['0-19'].map(entry => entry.id)).toEqual(['newcomer']);
     expect(snapshot.playerWeeklyByBracket['30-39'].map(entry => entry.id)).toEqual(['regular']);
-    expect(snapshot.playerWeeklyByBracket['40-45'].map(entry => entry.id)).toEqual(['legacy']);
-    expect(snapshot.playerWeeklyByBracket['45+'].map(entry => entry.id)).toEqual(['veteran']);
+    expect(snapshot.playerWeeklyByBracket['40-44'].map(entry => entry.id)).toEqual(['legacy']);
+    expect(snapshot.playerWeeklyByBracket['45+'].map(entry => entry.id)).toEqual(['boundary', 'veteran']);
     expect(snapshot.playerWeeklyByBracket.Prestige.map(entry => entry.id)).toEqual([
       'prestige-two', 'prestige-one',
     ]);
-    expect(snapshot.playerTotal).toHaveLength(6);
+    expect(snapshot.playerTotal).toHaveLength(7);
 
     const userCsvCall = (writeWeeklySnapshot as jest.Mock).mock.calls.find(call => call[1] === 'users');
     expect(userCsvCall[3]).toContain('prestige_level');
     expect(userCsvCall[3]).toContain('prestige-two,Prestige Two,35,ZA,200,2');
     expect(userCsvCall[3]).toContain('legacy,Legacy,42,ZA,80,0');
-    expect(batchClient.user.getUserLite).toHaveBeenCalledTimes(6);
+    expect(batchClient.user.getUserLite).toHaveBeenCalledTimes(7);
     expect((apiService.createCommandBatchClient as jest.Mock)).toHaveBeenCalledTimes(3);
   });
 });

@@ -237,6 +237,18 @@ export const autoroleCommand: Command = {
             )
             .addRoleOption(opt =>
               opt
+                .setName('prestige_role')
+                .setDescription('Additional role for linked WarEra players with Prestige 1+')
+                .setRequired(false)
+            )
+            .addBooleanOption(opt =>
+              opt
+                .setName('clear_prestige_role')
+                .setDescription('Stop managing the Prestige role (leaves existing holders untouched)')
+                .setRequired(false)
+            )
+            .addRoleOption(opt =>
+              opt
                 .setName('opsec_role')
                 .setDescription('OPSEC role: granted at a level, removed on inactivity, never auto re-added')
                 .setRequired(false)

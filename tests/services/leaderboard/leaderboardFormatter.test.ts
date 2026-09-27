@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import {
   buildLeaderboardPayload,
+  parseLevelBrackets,
   PRESTIGE_BRACKET_LABEL,
   userMatchesBracket,
 } from '../../../src/services/leaderboard/leaderboardFormatter';
@@ -9,6 +10,13 @@ import { LeaderboardSnapshot, LevelBracket } from '../../../src/config/config';
 const bracket: LevelBracket = { minLevel: 30, maxLevel: 39, label: '30-39' };
 
 describe('prestige leaderboards', () => {
+  it('keeps level 45 out of 40-44 and in 45+', () => {
+    const brackets = parseLevelBrackets('0-19,20-29,30-39,40-44,45+');
+    expect(userMatchesBracket(45, brackets[3])).toBe(false);
+    expect(userMatchesBracket(45, brackets[4])).toBe(true);
+    expect(() => parseLevelBrackets('40-45,45+')).toThrow('Level brackets overlap');
+  });
+
   it('keeps P1+ players out of ordinary level brackets', () => {
     expect(userMatchesBracket(33, bracket, 0)).toBe(true);
     expect(userMatchesBracket(33, bracket, 1)).toBe(false);

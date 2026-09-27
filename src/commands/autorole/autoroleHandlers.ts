@@ -449,6 +449,7 @@ export async function handleConfig(
         `**MU roles:** ${muRoleCount} (manage with \`/mu\`)\n` +
         `**Build roles:** eco ${cfg.ecoRoleId ? `<@&${cfg.ecoRoleId}>` : 'None'} (${cfg.ecoThreshold}%), war ${cfg.warRoleId ? `<@&${cfg.warRoleId}>` : 'None'} (${cfg.warThreshold}%), hybrid ${cfg.hybridRoleId ? `<@&${cfg.hybridRoleId}>` : 'None'}\n` +
         `**Linked role:** ${cfg.linkedRoleId ? `<@&${cfg.linkedRoleId}>` : 'None'}\n` +
+        `**Prestige role:** ${cfg.prestigeRoleId ? `<@&${cfg.prestigeRoleId}>` : 'None'} (additional, P1+)\n` +
         `**Unlinked role:** ${cfg.unlinkedRoleId ? `<@&${cfg.unlinkedRoleId}>` : 'None'}\n` +
         `**OPSEC role:** ${cfg.opsecRoleId ? `<@&${cfg.opsecRoleId}>` : 'None'} (granted at level ${cfg.opsecMinLevel}, revoked after ${cfg.opsecInactivityDays}d inactive, auto-apply ${cfg.opsecAutoApply === false ? 'off' : 'on'})\n` +
         `**OPSEC exception role:** ${cfg.opsecExceptionRoleId ? `<@&${cfg.opsecExceptionRoleId}>` : 'None'}\n` +
@@ -476,6 +477,8 @@ export async function handleConfig(
     const clearUnlinkedRole = interaction.options.getBoolean('clear_unlinked_role');
     const linkedRole = interaction.options.getRole('linked_role');
     const clearLinkedRole = interaction.options.getBoolean('clear_linked_role');
+    const prestigeRole = interaction.options.getRole('prestige_role');
+    const clearPrestigeRole = interaction.options.getBoolean('clear_prestige_role');
     const opsecRole = interaction.options.getRole('opsec_role');
     const clearOpsecRole = interaction.options.getBoolean('clear_opsec_role');
     const opsecExceptionRole = interaction.options.getRole('opsec_exception_role');
@@ -504,6 +507,11 @@ export async function handleConfig(
       update.linkedRoleId = '';
     } else if (linkedRole) {
       update.linkedRoleId = linkedRole.id;
+    }
+    if (clearPrestigeRole) {
+      update.prestigeRoleId = '';
+    } else if (prestigeRole) {
+      update.prestigeRoleId = prestigeRole.id;
     }
     if (clearOpsecRole) {
       update.opsecRoleId = '';

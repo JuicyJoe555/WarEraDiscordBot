@@ -38,7 +38,7 @@ export const leaderboardCommand: Command = {
             .addStringOption(option =>
               option
                 .setName('brackets')
-                .setDescription('Level brackets, e.g. 20-29,30-39,40+ (default: 20-29,30-39,40+)')
+                .setDescription('Level brackets (default: 0-19,20-29,30-39,40-44,45+)')
                 .setRequired(false)
             )
             .addChannelOption(option =>

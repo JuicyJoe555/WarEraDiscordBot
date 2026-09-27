@@ -47,6 +47,38 @@ const ctx = (
 ): MemberSyncContext => ({ cfg, militaryUnits, opsecRevoked, now });
 
 describe('computeMemberSyncPlan', () => {
+  it('adds Prestige alongside the ordinary level role for P1+ players', () => {
+    const plan = computeMemberSyncPlan(
+      baseUser({ level: 35, prestigeLevel: 1 }),
+      ['lvl30'],
+      null,
+      ctx(baseConfig({ prestigeRoleId: 'prestige' }))
+    );
+    expect(plan.rolesToAdd).toContain('prestige');
+    expect(plan.rolesToRemove).not.toContain('lvl30');
+  });
+
+  it('removes Prestige at P0 while keeping the normal level role', () => {
+    const plan = computeMemberSyncPlan(
+      baseUser({ level: 35, prestigeLevel: 0 }),
+      ['lvl30', 'prestige'],
+      null,
+      ctx(baseConfig({ prestigeRoleId: 'prestige' }))
+    );
+    expect(plan.rolesToRemove).toContain('prestige');
+    expect(plan.rolesToRemove).not.toContain('lvl30');
+  });
+
+  it('does not revoke Prestige if the API omits prestige level', () => {
+    const plan = computeMemberSyncPlan(
+      baseUser({ level: 35 }),
+      ['lvl30', 'prestige'],
+      null,
+      ctx(baseConfig({ prestigeRoleId: 'prestige' }))
+    );
+    expect(plan.rolesToRemove).not.toContain('prestige');
+  });
+
   it('adds the level, build and MU roles the member qualifies for', () => {
     const plan = computeMemberSyncPlan(baseUser(), [], null, ctx(baseConfig()));
     expect(plan.rolesToAdd.sort()).toEqual(['lvl10', 'mu-role-1', 'war']);
